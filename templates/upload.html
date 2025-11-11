@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Resume - Resume to Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #667eea;
+        }
+        
+        .user-details h2 {
+            color: #2d3748;
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+        
+        .user-details p {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .logout-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: #c53030;
+            transform: translateY(-2px);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            color: #2d3748;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .file-upload {
+            border: 3px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+        
+        .file-upload.dragover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+        
+        .file-upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .file-upload-text {
+            color: #4a5568;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .file-upload-hint {
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        
+        #resume {
+            display: none;
+        }
+        
+        .file-selected {
+            margin-top: 15px;
+            padding: 12px 16px;
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 8px;
+            color: #22543d;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .theme-option {
+            position: relative;
+        }
+        
+        .theme-option input[type="radio"] {
+            display: none;
+        }
+        
+        .theme-card {
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .theme-option input[type="radio"]:checked + .theme-card {
+            border-color: #667eea;
+            background: #f7fafc;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .theme-card:hover {
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
+        
+        .theme-colors {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .theme-name {
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
+        .submit-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border: 1px solid #fc8181;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .theme-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="user-info">
+            <img src="{{ user.avatar }}" alt="{{ user.name }}" class="avatar">
+            <div class="user-details">
+                <h2>{{ user.name }}</h2>
+                <p>@{{ user.username }}</p>
+            </div>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+    
+    <div class="container">
+        <h1>Create Your Portfolio</h1>
+        <p class="subtitle">Upload your resume and choose a theme to get started</p>
+        
+        <div class="error" id="error"></div>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Upload Resume</label>
+                <div class="file-upload" id="fileUpload">
+                    <div class="file-upload-icon">📄</div>
+                    <div class="file-upload-text">Click to upload or drag and drop</div>
+                    <div class="file-upload-hint">PDF or DOCX (Max 16MB)</div>
+                    <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+                </div>
+                <div class="file-selected" id="fileSelected"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>Choose Color Theme</label>
+                <div class="theme-grid">
+                    {% for theme_key, theme_colors in themes.items() %}
+                    <div class="theme-option">
+                        <input type="radio" id="{{ theme_key }}" name="theme" value="{{ theme_key }}" {% if loop.first %}checked{% endif %}>
+                        <label for="{{ theme_key }}" class="theme-card">
+                            <div class="theme-colors">
+                                <div class="color-dot" style="background: {{ theme_colors.primary }}"></div>
+                                <div class="color-dot" style="background: {{ theme_colors.secondary }}"></div>
+                                <div class="color-dot" style="background: {{ theme_colors.accent }}"></div>
+                            </div>
+                            <div class="theme-name">{{ theme_key.replace('-', ' ') }}</div>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">Generate Portfolio</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Generating your premium portfolio... This may take 1-2 minutes.</div>
+            <div style="margin-top: 15px; font-size: 14px; color: #718096;">Creating modern design with animations and professional styling...</div>
+        </div>
+    </div>
+    
+    <script>
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInput = document.getElementById('resume');
+        const fileSelected = document.getElementById('fileSelected');
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        
+        // File upload click
+        fileUpload.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // File selected
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                fileSelected.textContent = `✓ Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileSelected.style.display = 'block';
+            }
+        });
+        
+        // Drag and drop
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+        
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+        
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                const file = files[0];
+                fileSelected.textContent = `✓ Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileSelected.style.display = 'block';
+            }
+        });
+        
+        // Form submission
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            
+            if (!fileInput.files.length) {
+                errorDiv.textContent = 'Please select a resume file.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Show loading
+            uploadForm.style.display = 'none';
+            loading.style.display = 'block';
+            
+            const formData = new FormData(uploadForm);
+            
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = result.redirect;
+                } else {
+                    errorDiv.textContent = result.error || 'Failed to generate portfolio.';
+                    errorDiv.style.display = 'block';
+                    uploadForm.style.display = 'block';
+                    loading.style.display = 'none';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
+                uploadForm.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

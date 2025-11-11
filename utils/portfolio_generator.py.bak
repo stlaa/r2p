@@ -1,0 +1,406 @@
+import requests
+import json
+from typing import Dict, Optional
+
+class PortfolioGenerator:
+    """
+    Generate HTML portfolio using Perplexity API.
+    Ensures consistent, reproducible output with structured prompts.
+    """
+    
+    def __init__(self, api_key: str, api_url: str = 'https://api.perplexity.ai/chat/completions', model: str = 'sonar'):
+        """Initialize with Perplexity API key"""
+        self.api_key = api_key
+        self.api_url = api_url
+        self.model = model
+    
+    def _get_system_prompt(self) -> str:
+        """
+        Return the system prompt that defines the portfolio structure.
+        This ensures reproducibility.
+        """
+        return """You are creating a professional portfolio website inspired by the HTML5 UP "Directive" template design style. Generate clean, minimalist HTML with bold typography and generous whitespace.
+
+⚠️ CRITICAL OUTPUT FORMAT:
+- Start IMMEDIATELY with: <!DOCTYPE html>
+- End with: </html>
+- ZERO explanatory text, ZERO markdown blocks, ZERO comments outside HTML
+- ALL CSS must be in <style> tags in <head>
+
+� DESIGN STYLE (HTML5 UP Directive-inspired):
+
+**Layout Philosophy:**
+- Full-width sections with alternating backgrounds
+- Fixed side navigation on desktop (converts to top bar on mobile)
+- Clean, minimalist aesthetic with bold typography
+- Generous whitespace and padding
+- Split-screen layouts where appropriate
+
+**Typography (REQUIRED):**
+```
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+```
+- Font: 'Source Sans Pro', Arial, sans-serif throughout
+- Large section titles: 48-60px, UPPERCASE, font-weight: 900, letter-spacing: 0.1em
+- Subtitles: 24-32px, font-weight: 300, letter-spacing: 0.05em
+- Body: 16-18px, font-weight: 300, line-height: 1.8
+- Use light font weights (300) for elegance
+
+�🎨 MANDATORY DESIGN ELEMENTS:
+
+1. **GOOGLE FONTS** (Required in <head>):
+   ```
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+   ```
+   Use Poppins for headings, Inter for body text
+
+2. **FIXED NAVIGATION BAR** (Must have):
+   - position: fixed; top: 0; width: 100%; z-index: 1000
+   - Semi-transparent background with backdrop-filter: blur(10px)
+   - Smooth scroll links to sections
+   - box-shadow: 0 2px 10px rgba(0,0,0,0.1)
+
+3. **HERO SECTION** (Large, impactful):
+   - min-height: 100vh; display: flex; align-items: center
+   - Gradient background using theme colors: linear-gradient(135deg, primary, secondary)
+   - Name in huge text (60-80px), with text-shadow for depth
+   - Professional title/tagline (24-28px)
+   - CTA buttons with hover effects (transform: translateY(-3px))
+
+4. **SECTION DESIGN**:
+   - Each section: padding: 80px 20px; min-height: 60vh
+   - Alternating backgrounds (white, light gray, subtle gradient)
+   - Section titles: 40-48px, margin-bottom: 50px, text-align: center
+   - Fade-in animation on scroll (use CSS @keyframes fadeInUp)
+
+5. **CARD LAYOUTS** (Modern style):
+   - background: white/rgba(255,255,255,0.9)
+   - border-radius: 15-20px
+   - box-shadow: 0 10px 40px rgba(0,0,0,0.1)
+   - padding: 30-40px
+   - hover: transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0,0,0,0.15)
+   - transition: all 0.3s ease
+
+6. **SKILLS SECTION** (Visual):
+   - Grid or flexbox layout (3-4 columns on desktop)
+   - Each skill as pill/badge: padding: 12px 24px; border-radius: 25px
+   - background: gradient or solid with shadow
+   - hover: scale(1.05)
+   - OR: Progress bars with percentage and animation
+
+7. **EXPERIENCE TIMELINE**:
+   - Vertical line connecting items (border-left: 3px solid primary)
+   - Each job: card with date, company, role, bullets
+   - Staggered layout with connecting dots
+   - Or: Horizontal cards with year labels
+
+9. **RESPONSIVE DESIGN** (Mobile-first):
+   - @media (max-width: 768px) for mobile adjustments
+   - Stack cards vertically on mobile
+   - Larger touch targets (min 44px)
+   - Readable font sizes (min 16px body text)
+
+10. **FOOTER** (Clean):
+   - background: dark color; color: white; padding: 40px 20px
+   - Copyright and year
+   - Social icons (use Unicode: LinkedIn ⌨, GitHub 🔗)
+
+📐 EXACT STRUCTURE TO FOLLOW:
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[Name] - Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables for theme colors */
+    :root { --primary: [primary]; --secondary: [secondary]; --accent: [accent]; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: #333; line-height: 1.6; }
+    h1, h2, h3 { font-family: 'Poppins', sans-serif; }
+    
+    /* Fixed Navigation */
+    nav { position: fixed; top: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    
+    /* Hero Section */
+    .hero { min-height: 100vh; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; display: flex; align-items: center; justify-content: center; text-align: center; }
+    .hero h1 { font-size: 72px; font-weight: 700; margin-bottom: 20px; }
+    
+    /* Sections */
+    section { padding: 80px 20px; max-width: 1200px; margin: 0 auto; }
+    section h2 { font-size: 42px; margin-bottom: 50px; text-align: center; color: var(--primary); }
+    
+    /* Cards */
+    .card { background: white; border-radius: 20px; padding: 35px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+    .card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    
+    /* Skills */
+    .skill-tag { display: inline-block; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 12px 24px; border-radius: 25px; margin: 8px; transition: transform 0.3s; }
+    .skill-tag:hover { transform: scale(1.1); }
+    
+    /* Animations */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .animate { animation: fadeInUp 0.6s ease forwards; }
+    
+    /* Responsive */
+    @media (max-width: 768px) { .hero h1 { font-size: 42px; } section { padding: 50px 15px; } }
+  </style>
+</head>
+<body>
+  [CONTENT HERE WITH ALL SECTIONS]
+</body>
+</html>
+
+🎯 CRITICAL REMINDERS:
+- NO text before <!DOCTYPE html>
+- NO text after </html>
+- NO markdown ```html``` blocks
+- ALL resume content must be included
+- Use theme colors throughout
+- Modern, not dated design
+- This is the FINAL output - make it perfect"""
+    
+    def _get_user_prompt(self, resume_content: str, color_theme: Dict[str, str]) -> str:
+        """
+        Generate user prompt with resume content and color theme.
+        Structured format ensures reproducibility.
+        """
+        theme_css = f"""
+PRIMARY COLOR: {color_theme['primary']} (Use for headers, CTA buttons, key accents)
+SECONDARY COLOR: {color_theme['secondary']} (Use for subheadings, links, hover states)
+ACCENT COLOR: {color_theme['accent']} (Use for highlights, badges, important elements)
+BACKGROUND COLOR: {color_theme['background']} (Use for page background, card backgrounds)
+TEXT COLOR: {color_theme['text']} (Use for body text, ensure high contrast)
+"""
+        
+        return f"""Transform this resume into an EXCEPTIONAL, modern portfolio website that looks like it costs $5000+.
+
+🎨 COLOR PALETTE (Apply strategically):
+{theme_css}
+
+📋 RESUME DATA (Use ALL of this content):
+{resume_content}
+
+⚡ BUILD THIS EXACT PORTFOLIO:
+
+1. **HERO** (Full viewport height with gradient background)
+   - Name in 72px Poppins font, bold, with text-shadow
+   - Professional title in 28px
+   - 2 CTA buttons with hover lift effect
+   
+2. **SUMMARY** (On white background)
+   - Center-aligned card with shadow
+   - 2-3 sentences about the person
+   
+3. **EXPERIENCE** (Light background, alternating)
+   - Timeline or stacked cards
+   - Each job: Company (bold 24px), Role (20px), Dates (gray)
+   - Bullet points for achievements
+   - Hover effect on each card
+   
+4. **SKILLS** (Grid of skill pills)
+   - Categorized: "Programming Languages", "Frameworks", "Tools"
+   - Each skill as rounded pill with gradient
+   - 3-4 columns on desktop, 2 on tablet, 1 on mobile
+   
+5. **EDUCATION** (Clean cards)
+   - Institution, degree, dates
+   - Honors/achievements if any
+   
+6. **PROJECTS** (If mentioned in resume)
+   - 2-3 column grid
+   - Card with title, description, tech stack
+   
+7. **FOOTER** (Dark background)
+   - Copyright, social links
+
+🚨 CRITICAL: Output MUST start with <!DOCTYPE html> - NO other text before it!
+
+Generate a visually stunning, professionally coded, modern portfolio that looks like it's worth $10,000."""
+    
+    def generate_portfolio(
+        self,
+        resume_content: str,
+        color_theme: Dict[str, str]
+    ) -> Dict[str, any]:
+        """
+        Generate portfolio HTML using Perplexity API.
+        
+        Args:
+            resume_content: Parsed and filtered resume content
+            color_theme: Dictionary with color values (primary, secondary, accent, background, text)
+            
+        Returns:
+            Dictionary with 'html' content and 'success' status
+        """
+        
+        # Prepare API request
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': self.model,
+            'messages': [
+                {
+                    'role': 'system',
+                    'content': self._get_system_prompt()
+                },
+                {
+                    'role': 'user',
+                    'content': self._get_user_prompt(resume_content, color_theme)
+                }
+            ],
+            'max_tokens': 6000,  # Optimized for modern portfolios - balances quality and speed
+            'temperature': 0.3  # Balanced: consistent structure with creative design elements
+        }
+        
+        try:
+            # Make API request with extended timeout for complex portfolio generation
+            response = requests.post(
+                self.api_url,
+                headers=headers,
+                json=payload,
+                timeout=120  # 2 minutes - allows time for high-quality generation
+            )
+            
+            response.raise_for_status()
+            
+            # Parse response
+            result = response.json()
+            
+            # Extract HTML content
+            if 'choices' in result and len(result['choices']) > 0:
+                html_content = result['choices'][0]['message']['content']
+                
+                # Clean up the response (remove markdown code blocks if present)
+                html_content = self._clean_html_response(html_content)
+                
+                # Validate HTML - if valid structure exists, accept it
+                # Even if validation fails, we'll still return it with a warning
+                is_valid = self._validate_html(html_content)
+                
+                if is_valid:
+                    return {
+                        'success': True,
+                        'html': html_content
+                    }
+                elif len(html_content) > 500:
+                    # If we have substantial content, return it anyway
+                    # User can still preview and decide
+                    return {
+                        'success': True,
+                        'html': html_content,
+                        'warning': 'Portfolio generated but may need manual review'
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': f'Generated HTML is too short or incomplete (length: {len(html_content)}). Please try again.',
+                        'html': html_content
+                    }
+            else:
+                return {
+                    'success': False,
+                    'error': 'No content received from API'
+                }
+                
+        except requests.exceptions.Timeout:
+            return {
+                'success': False,
+                'error': 'Request timed out. The portfolio generation is taking longer than expected. Please try again with a shorter resume or simpler content.'
+            }
+        except requests.exceptions.RequestException as e:
+            error_msg = str(e)
+            if 'timeout' in error_msg.lower():
+                error_msg = 'Request timed out. Please try again.'
+            return {
+                'success': False,
+                'error': f'API request failed: {error_msg}'
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Unexpected error: {str(e)}'
+            }
+    
+    @staticmethod
+    def _clean_html_response(html_content: str) -> str:
+        """
+        Clean HTML response by removing markdown code blocks and extra text.
+        """
+        # Remove markdown code blocks at start
+        if html_content.startswith('```html'):
+            html_content = html_content[7:]
+        elif html_content.startswith('```'):
+            html_content = html_content[3:]
+        
+        # Remove markdown code blocks at end
+        if html_content.endswith('```'):
+            html_content = html_content[:-3]
+        
+        # Strip whitespace
+        html_content = html_content.strip()
+        
+        # If content doesn't start with <!DOCTYPE or <html, try to find it
+        if not html_content.lower().startswith(('<!doctype', '<html')):
+            # Look for the start of HTML
+            doctype_pos = html_content.lower().find('<!doctype')
+            html_pos = html_content.lower().find('<html')
+            
+            if doctype_pos != -1:
+                html_content = html_content[doctype_pos:]
+            elif html_pos != -1:
+                html_content = html_content[html_pos:]
+        
+        # If content has extra text after </html>, trim it
+        html_end = html_content.lower().rfind('</html>')
+        if html_end != -1:
+            html_content = html_content[:html_end + 7]  # Include </html>
+        
+        return html_content.strip()
+    
+    @staticmethod
+    def _validate_html(html_content: str) -> bool:
+        """
+        Basic validation to ensure HTML is complete.
+        More lenient to accept valid modern HTML structures.
+        """
+        if not html_content or len(html_content) < 50:
+            return False
+            
+        html_lower = html_content.lower()
+        
+        # Check for essential HTML structure
+        # Must have html, head, and body tags
+        required_tags = [
+            '<html',
+            '</html>',
+            '<body',
+            '</body>'
+        ]
+        
+        # Check if all required tags exist
+        has_structure = all(tag in html_lower for tag in required_tags)
+        
+        # Additional check: should have some CSS (style tag or inline styles)
+        has_styling = '<style' in html_lower or 'style=' in html_lower
+        
+        return has_structure and has_styling
+    
+    @staticmethod
+    def save_portfolio(html_content: str, filepath: str) -> bool:
+        """
+        Save portfolio HTML to file.
+        """
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            return True
+        except Exception as e:
+            print(f"Error saving portfolio: {str(e)}")
+            return False
