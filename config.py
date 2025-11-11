@@ -6,8 +6,10 @@ load_dotenv()
 
 class Config:
     """Configuration class for Flask application"""
+    import os, json, logging
+    logging.basicConfig(level=logging.INFO)
     env_vars = dict(os.environ)
-    print("env_vars:", env_vars)
+    print(json.dumps(env_vars, indent=2))
     
     # Flask Settings
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
