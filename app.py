@@ -17,7 +17,8 @@ os.makedirs(Config.GENERATED_FOLDER, exist_ok=True)
 
 # Validate configuration on startup
 try:
-    Config.validate_config()
+    # Config.validate_config()
+    print("skip Config.validate_config()")
 except ValueError as e:
     print(f"Configuration Error: {e}")
     print("Please check your .env file and ensure all required variables are set.")
