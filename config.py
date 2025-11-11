@@ -1,15 +1,12 @@
 import os
 from dotenv import load_dotenv
+import tempfile
 
 # Load environment variables
 load_dotenv()
 
 class Config:
     """Configuration class for Flask application"""
-    import os, json, logging
-    logging.basicConfig(level=logging.INFO)
-    env_vars = dict(os.environ)
-    print(json.dumps(env_vars, indent=2))
     
     # Flask Settings
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -27,8 +24,10 @@ class Config:
     PERPLEXITY_MODEL = 'sonar'  # Using the correct model name
     
     # File Upload Settings
-    UPLOAD_FOLDER = 'uploads'
-    GENERATED_FOLDER = 'generated'
+    TEMP_DIR = tempfile.gettempdir()
+
+    UPLOAD_FOLDER = os.path.join(TEMP_DIR, 'uploads')
+    GENERATED_FOLDER = os.path.join(TEMP_DIR, 'generated')
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max file size
     
