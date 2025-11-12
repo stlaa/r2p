@@ -201,6 +201,24 @@
             box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
         }
         
+        .btn-deploy {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .btn-deploy:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #654a92 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-deploy:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
         .btn-create-new {
             background: #4a5568;
             color: white;
@@ -210,6 +228,57 @@
         .btn-create-new:hover {
             background: #2d3748;
             transform: translateY(-2px);
+        }
+        
+        .deployment-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .deployment-status.success {
+            background: #c6f6d5;
+            border: 1px solid #48bb78;
+            color: #22543d;
+            display: block;
+        }
+        
+        .deployment-status.error {
+            background: #fed7d7;
+            border: 1px solid #e53e3e;
+            color: #742a2a;
+            display: block;
+        }
+        
+        .deployment-status.loading {
+            background: #bee3f8;
+            border: 1px solid #3182ce;
+            color: #2c5282;
+            display: block;
+        }
+        
+        .deployment-status a {
+            color: inherit;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-top-color: #2c5282;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         .tips {
@@ -316,22 +385,87 @@
                 <span class="icon">⬇️</span>
                 <span>Download HTML</span>
             </a>
+            <button id="deployBtn" class="btn btn-deploy" data-filename="{{ portfolio.filename }}">
+                <span class="icon">🚀</span>
+                <span>Deploy to GitHub Pages</span>
+            </button>
             <a href="{{ url_for('upload') }}" class="btn btn-create-new">
                 <span class="icon">➕</span>
                 <span>Create Another Portfolio</span>
             </a>
         </div>
         
+        <div id="deploymentStatus" class="deployment-status"></div>
+        
         <div class="tips">
             <div class="tips-title">💡 Next Steps:</div>
             <ul>
                 <li>Preview your portfolio to see how it looks</li>
                 <li>Download the HTML file to your computer</li>
-                <li>Host it on GitHub Pages, Netlify, or any web hosting service</li>
-                <li>Share the link with potential employers or clients</li>
+                <li>Click "Deploy to GitHub Pages" to publish your portfolio instantly</li>
+                <li>Share your portfolio link with potential employers or clients</li>
                 <li>Update your resume and regenerate anytime</li>
             </ul>
         </div>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deployBtn = document.getElementById('deployBtn');
+            const deploymentStatus = document.getElementById('deploymentStatus');
+            
+            deployBtn.addEventListener('click', async function() {
+                const filename = this.dataset.filename;
+                
+                // Disable button and show loading state
+                deployBtn.disabled = true;
+                deployBtn.innerHTML = '<span class="spinner"></span><span>Deploying...</span>';
+                
+                // Show loading message
+                deploymentStatus.className = 'deployment-status loading';
+                deploymentStatus.innerHTML = '<span class="spinner"></span>Deploying your portfolio to GitHub Pages...';
+                
+                try {
+                    const response = await fetch(`/deploy/${filename}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Show success message
+                        deploymentStatus.className = 'deployment-status success';
+                        deploymentStatus.innerHTML = `
+                            ✅ ${data.message}!<br>
+                            <strong>Your portfolio is live at:</strong> <a href="${data.url}" target="_blank">${data.url}</a><br>
+                            <small>Note: It may take a few minutes for GitHub Pages to update.</small>
+                        `;
+                        
+                        // Update button
+                        deployBtn.innerHTML = '<span class="icon">✓</span><span>Deployed Successfully</span>';
+                    } else {
+                        // Show error message
+                        deploymentStatus.className = 'deployment-status error';
+                        deploymentStatus.innerHTML = `❌ Deployment failed: ${data.error}`;
+                        
+                        // Re-enable button
+                        deployBtn.disabled = false;
+                        deployBtn.innerHTML = '<span class="icon">🚀</span><span>Deploy to GitHub Pages</span>';
+                    }
+                } catch (error) {
+                    // Show error message
+                    deploymentStatus.className = 'deployment-status error';
+                    deploymentStatus.innerHTML = `❌ Network error: ${error.message}`;
+                    
+                    // Re-enable button
+                    deployBtn.disabled = false;
+                    deployBtn.innerHTML = '<span class="icon">🚀</span><span>Deploy to GitHub Pages</span>';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

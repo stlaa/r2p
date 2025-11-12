@@ -17,6 +17,7 @@ class Config:
     GITHUB_AUTHORIZATION_BASE_URL = 'https://github.com/login/oauth/authorize'
     GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
     GITHUB_USER_API_URL = 'https://api.github.com/user'
+    GITHUB_REPOS_API_URL = 'https://api.github.com/user/repos'
     
     # Perplexity API Settings
     PERPLEXITY_API_KEY = os.getenv('PERPLEXITY_API_KEY')
