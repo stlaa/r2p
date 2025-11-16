@@ -11,19 +11,19 @@ permissions:
 
 jobs:
   build:
-    uses: ./.github/workflows/reusable/build.yml
+    uses: ./.github/workflows/build.yml
     with:
       image-tag: pr-${{ github.event.pull_request.number }}
 
   test:
     needs: build
-    uses: ./.github/workflows/reusable/test.yml
+    uses: ./.github/workflows/test.yml
     with:
       python-version: '3.11'
 
   static-analysis:
     needs: test
-    uses: ./.github/workflows/reusable/static-analysis.yml
+    uses: ./.github/workflows/static-analysis.yml
     with:
       python-version: '3.11'
 
