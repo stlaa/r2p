@@ -5,3 +5,5 @@ requests==2.31.0
 PyPDF2==3.0.1
 python-docx==0.8.11
 PyGithub==2.1.1
+pytest-cov==7.0.0
+

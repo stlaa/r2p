@@ -1,0 +1,40 @@
+on:
+  workflow_call:
+    inputs:
+      image-tag:
+        required: false
+        type: string
+        default: latest
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU and Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v4
+        with:
+          push: false
+          tags: ${{ inputs.image-tag }}
+          file: Dockerfile
+
+      - name: Save image to tar (best-effort)
+        run: |
+          IMAGE_ID=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -m1 "${{ inputs.image-tag }}" || true)
+          if [ -n "$IMAGE_ID" ]; then
+            docker save "$IMAGE_ID" -o image.tar || true
+          fi
+
+      - name: Upload Docker image artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar
