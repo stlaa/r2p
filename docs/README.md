@@ -2,7 +2,7 @@
 
 Transform your resume into a beautiful, professional portfolio website with just a few clicks!
  
-## 🌟 Features
+## 🌟 Features 
 
 - **GitHub OAuth Authentication** - Secure login with your GitHub account
 - **Resume Upload** - Support for PDF and DOCX formats
