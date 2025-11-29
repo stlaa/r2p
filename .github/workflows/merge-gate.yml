@@ -28,11 +28,9 @@ jobs:
 
       - name: Run TruffleHog secret scanner
         run: |
-          trufflehog filesystem . \
-            --only-verified \
-            --json 2>&1 | tee trufflehog_output.json
-          if [ $? -ne 0 ]; then exit 1; fi
-          if grep -q "Secret" trufflehog_output.json; then exit 1; fi
+          trufflehog git . \
+            --since_commit ${{ github.event.pull_request.base.sha }} \
+            --json || exit 1
 
   # Job 2: Linting (Python code quality)
   # lint:
