@@ -14,10 +14,6 @@ class Config:
     # GitHub OAuth Settings
     GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
-<<<<<<< HEAD
-    GITHUB_PASS = "mypassword@12345"
-=======
->>>>>>> e1d8e30 (test: add GitHub token for secret scanning validation)
     GITHUB_AUTHORIZATION_BASE_URL = 'https://github.com/login/oauth/authorize'
     GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
     GITHUB_USER_API_URL = 'https://api.github.com/user'
