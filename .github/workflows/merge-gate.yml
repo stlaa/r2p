@@ -24,7 +24,7 @@ jobs:
           path: ./
           base: ${{ github.event.pull_request.base.sha }}
           head: ${{ github.event.pull_request.head.sha }}
-          extra_args: --debug --only-verified
+          extra_args: --debug
 
   # Job 2: Linting (Python code quality)
   # lint:
