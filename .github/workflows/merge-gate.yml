@@ -18,14 +18,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run TruffleHog secret scanner
-        uses: trufflesecurity/trufflehog@main
+      - name: Set up Python for TruffleHog
+        uses: actions/setup-python@v4
         with:
-          path: ./
-          base: ${{ github.event.pull_request.base.ref }}
-          head: ${{ github.event.pull_request.head.ref }}
-          extra_args: --only-verified --json
-          fail: true
+          python-version: '3.11'
+
+      - name: Install TruffleHog
+        run: pip install trufflehog -q
+
+      - name: Run TruffleHog secret scanner
+        run: |
+          trufflehog git file://. \
+            --base ${{ github.event.pull_request.base.sha }} \
+            --head ${{ github.event.pull_request.head.sha }} \
+            --only-verified \
+            --json || exit 1
 
   # Job 2: Linting (Python code quality)
   # lint:
