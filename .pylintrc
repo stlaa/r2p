@@ -1,0 +1,20 @@
+[MASTER]
+# Disable specific warnings
+disable=
+    C0114,  # missing-module-docstring
+    C0116,  # missing-function-docstring
+    R0913,  # too-many-arguments
+    R0914,  # too-many-locals
+    W0212,  # protected-access
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+max-attributes=10
+
+[BASIC]
+good-names=i,j,k,ex,Run,_,id,x,y,z,df,ax
+
+[MESSAGES CONTROL]
+enable=all
