@@ -28,9 +28,10 @@ jobs:
 
       - name: Run TruffleHog secret scanner
         run: |
-          trufflehog git . \
+          trufflehog \
             --since_commit ${{ github.event.pull_request.base.sha }} \
-            --json || exit 1
+            --json \
+            git .
 
   # Job 2: Linting (Python code quality)
   # lint:
