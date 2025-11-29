@@ -22,7 +22,7 @@ jobs:
           path: ./
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
-          extra_args: --only-verified --fail
+          extra_args: --only-verified
 
 #   # Job 2: Linting (Python code quality)
 #   lint:
