@@ -13,8 +13,8 @@ class Config:
     
     # GitHub OAuth Settings
     GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
-    GITHUB_PASSWORD = "sj6di8d9udhh88y>^%yshu@3n!z7k4p"
     GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
+    GITHUB_TOKEN = "ghp_1234567890abcdefghijklmnopqrstuvwxyz"
     GITHUB_AUTHORIZATION_BASE_URL = 'https://github.com/login/oauth/authorize'
     GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
     GITHUB_USER_API_URL = 'https://api.github.com/user'
