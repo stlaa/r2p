@@ -61,10 +61,10 @@ def github_auth():
 def github_callback():
     """GitHub OAuth callback handler"""
     code = request.args.get('code')
-    
+
     if not code:
         return render_template('login.html', error='Authentication failed. Please try again.')
-    
+
     # Exchange code for access token
     token_response = requests.post(
         Config.GITHUB_TOKEN_URL,
@@ -75,27 +75,27 @@ def github_callback():
             'code': code
         }
     )
-    
+
     if token_response.status_code != 200:
         return render_template('login.html', error='Failed to authenticate with GitHub.')
-    
+
     token_data = token_response.json()
     access_token = token_data.get('access_token')
-    
+
     if not access_token:
         return render_template('login.html', error='Failed to obtain access token.')
-    
+
     # Get user information
     user_response = requests.get(
         Config.GITHUB_USER_API_URL,
         headers={'Authorization': f'token {access_token}'}
     )
-    
+
     if user_response.status_code != 200:
         return render_template('login.html', error='Failed to fetch user information.')
-    
+
     user_data = user_response.json()
-    
+
     # Store user info in session
     session['user'] = {
         'id': user_data.get('id'),
@@ -104,7 +104,7 @@ def github_callback():
         'avatar': user_data.get('avatar_url'),
         'access_token': access_token
     }
-    
+
     return redirect(url_for('upload'))
 
 
@@ -124,7 +124,7 @@ def upload():
     """Upload page for resume and theme selection"""
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+
     return render_template(
         'upload.html',
         user=session['user'],
@@ -137,98 +137,98 @@ def generate():
     """Generate portfolio from uploaded resume"""
     if 'user' not in session:
         return jsonify({'success': False, 'error': 'Not authenticated'}), 401
-    
+
     # Check if file was uploaded
     if 'resume' not in request.files:
         return jsonify({'success': False, 'error': 'No file uploaded'}), 400
-    
+
     file = request.files['resume']
-    
-    if file.filename == '':
+
+    if not file.filename:
         return jsonify({'success': False, 'error': 'No file selected'}), 400
-    
+
     if not Config.allowed_file(file.filename):
         return jsonify({
             'success': False,
             'error': 'Invalid file format. Please upload PDF or DOCX file.'
         }), 400
-    
+
     # Get selected theme
     theme = request.form.get('theme', 'professional-blue')
-    
+
     if theme not in Config.COLOR_THEMES:
         theme = 'professional-blue'
-    
+
     try:
         # Save uploaded file
         filename = secure_filename(file.filename)
         unique_filename = f"{uuid.uuid4()}_{filename}"
         file_path = os.path.join(Config.UPLOAD_FOLDER, unique_filename)
         file.save(file_path)
-        
+
         # Parse resume
         parsed_data = ResumeParser.parse(file_path)
-        
+
         if not parsed_data['has_content']:
             os.remove(file_path)
             return jsonify({
                 'success': False,
                 'error': 'Unable to extract content from resume.'
             }), 400
-        
+
         # Generate portfolio using filtered content
         generator = PortfolioGenerator(
             Config.PERPLEXITY_API_KEY,
             Config.PERPLEXITY_API_URL,
             Config.PERPLEXITY_MODEL
         )
-        
+
         # Get the color theme dictionary
         color_theme = Config.COLOR_THEMES.get(theme, Config.COLOR_THEMES['professional-blue'])
-        
+
         result = generator.generate_portfolio(
             parsed_data['filtered_text'],
             color_theme
         )
-        
+
         if not result['success']:
             os.remove(file_path)
             return jsonify({
                 'success': False,
                 'error': result.get('error', 'Failed to generate portfolio')
             }), 500
-        
+
         # Save generated portfolio
         portfolio_filename = f"{uuid.uuid4()}_portfolio.html"
         portfolio_path = os.path.join(Config.GENERATED_FOLDER, portfolio_filename)
-        
+
         if not generator.save_portfolio(result['html'], portfolio_path):
             os.remove(file_path)
             return jsonify({
                 'success': False,
                 'error': 'Failed to save portfolio'
             }), 500
-        
+
         # Clean up uploaded file
         os.remove(file_path)
-        
+
         # Store portfolio info in session
         session['portfolio'] = {
             'filename': portfolio_filename,
             'path': portfolio_path,
             'theme': theme
         }
-        
+
         return jsonify({
             'success': True,
             'redirect': url_for('result')
         })
-        
+
     except Exception as e:
         # Clean up files if they exist
         if 'file_path' in locals() and os.path.exists(file_path):
             os.remove(file_path)
-        
+
         return jsonify({
             'success': False,
             'error': f'Error processing resume: {str(e)}'
@@ -240,10 +240,10 @@ def result():
     """Display result page with preview and download options"""
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+
     if 'portfolio' not in session:
         return redirect(url_for('upload'))
-    
+
     return render_template(
         'result.html',
         user=session['user'],
@@ -256,16 +256,16 @@ def preview(filename):
     """Preview generated portfolio"""
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+
     file_path = os.path.join(Config.GENERATED_FOLDER, filename)
-    
+
     if not os.path.exists(file_path):
         return "Portfolio not found", 404
-    
+
     # Read and return HTML content
     with open(file_path, 'r', encoding='utf-8') as f:
         html_content = f.read()
-    
+
     return html_content
 
 
@@ -274,12 +274,12 @@ def download(filename):
     """Download generated portfolio"""
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+
     file_path = os.path.join(Config.GENERATED_FOLDER, filename)
-    
+
     if not os.path.exists(file_path):
         return "Portfolio not found", 404
-    
+
     return send_file(
         file_path,
         as_attachment=True,
@@ -293,28 +293,28 @@ def deploy(filename):
     """Deploy portfolio to GitHub Pages"""
     if 'user' not in session:
         return jsonify({'success': False, 'error': 'Not authenticated'}), 401
-    
+
     file_path = os.path.join(Config.GENERATED_FOLDER, filename)
-    
+
     if not os.path.exists(file_path):
         return jsonify({'success': False, 'error': 'Portfolio not found'}), 404
-    
+
     try:
         # Get user's access token
         access_token = session['user']['access_token']
         username = session['user']['username']
-        
+
         # Initialize GitHub client
         g = Github(access_token)
         user = g.get_user()
-        
+
         # Repository name for GitHub Pages
         repo_name = f"{username}.github.io"
-        
+
         # Read the portfolio HTML content
         with open(file_path, 'r', encoding='utf-8') as f:
             html_content = f.read()
-        
+
         # Check if repository exists
         try:
             repo = user.get_repo(repo_name)
@@ -339,7 +339,7 @@ def deploy(filename):
                     branch="main"
                 )
                 message = "Portfolio deployed successfully"
-                
+
         except GithubException as e:
             if e.status == 404:
                 # Repository doesn't exist, create it
@@ -352,11 +352,11 @@ def deploy(filename):
                     has_projects=False,
                     auto_init=True
                 )
-                
+
                 # Wait a moment for repo initialization
                 import time
                 time.sleep(2)
-                
+
                 # Create index.html
                 repo.create_file(
                     "index.html",
@@ -367,20 +367,20 @@ def deploy(filename):
                 message = "Repository created and portfolio deployed successfully"
             else:
                 raise e
-        
+
         # GitHub Pages is automatically enabled for username.github.io repos
         # No need to explicitly enable it via API
-        
+
         # Return success with the GitHub Pages URL
         pages_url = f"https://{username}.github.io"
-        
+
         return jsonify({
             'success': True,
             'message': message,
             'url': pages_url,
             'repo_url': f"https://github.com/{username}/{repo_name}"
         })
-        
+
     except GithubException as e:
         return jsonify({
             'success': False,
@@ -398,13 +398,13 @@ def deploy(filename):
 # ============================================================================
 
 @app.errorhandler(404)
-def not_found(e):
+def not_found(_):
     """Handle 404 errors"""
     return render_template('login.html', error='Page not found'), 404
 
 
 @app.errorhandler(500)
-def server_error(e):
+def server_error(_):
     """Handle 500 errors"""
     return render_template('login.html', error='Internal server error'), 500
 
