@@ -1,14 +1,17 @@
-﻿import requests
-import json
+﻿import json
 from typing import Dict
+
+import requests
 
 
 class PortfolioGenerator:
+    """Generate portfolio from resume content using Perplexity API."""
+
     def __init__(self, api_key: str, api_url: str, model: str):
         self.api_key = api_key
         self.api_url = api_url
         self.model = model
-    
+
     def _get_system_prompt(self) -> str:
         return """Create a professional portfolio website inspired by HTML5 UP's 'Directive' template.
 
@@ -77,7 +80,7 @@ DIRECTIVE STYLE:
    - CSS: section.animate-on-scroll { transition: opacity 0.8s ease, transform 0.8s ease; }
    - CSS: section.animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
    - Add class "animate-on-scroll" to sections that should animate (NOT to #intro)
-   - Add JavaScript at end of <body> BEFORE closing </body> tag: 
+   - Add JavaScript at end of <body> BEFORE closing </body> tag:
      <script>
      document.addEventListener('DOMContentLoaded', function() {
        const sections = document.querySelectorAll('.animate-on-scroll');
@@ -92,7 +95,7 @@ DIRECTIVE STYLE:
      });
      </script>
 
-11. RESPONSIVE: 
+11. RESPONSIVE:
    - All sizing uses clamp() for fluid scaling
    - Grid layouts use auto-fit with minmax for flexible columns
    - @media (max-width: 768px): nav links font-size: 11px, reduce letter-spacing to 0.03em, skills grid 2 columns
@@ -141,7 +144,7 @@ CRITICAL REMINDERS:
 - JavaScript MUST be inside <script> tags at end of <body> before </body>
 
 Output pure HTML only."""
-    
+
     def _get_user_prompt(self, resume_content: str, color_theme: Dict[str, str]) -> str:
         return f"""Generate portfolio HTML with this resume:
 
@@ -162,7 +165,7 @@ Use Directive style. Start with <!DOCTYPE html>. NO text before/after."""
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json"
             }
-            
+
             payload = {
                 "model": self.model,
                 "messages": [
@@ -174,32 +177,32 @@ Use Directive style. Start with <!DOCTYPE html>. NO text before/after."""
                 "max_tokens": 6000,
                 "stream": False
             }
-            
+
             response = requests.post(
                 self.api_url,
                 headers=headers,
                 json=payload,
                 timeout=120
             )
-            
+
             response.raise_for_status()
             result = response.json()
             html_content = result['choices'][0]['message']['content']
             html_content = self._clean_html_response(html_content)
-            
+
             if not self._validate_html(html_content):
                 return {
                     'success': False,
                     'error': 'Generated HTML failed validation',
                     'html': None
                 }
-            
+
             return {
                 'success': True,
                 'html': html_content,
                 'error': None
             }
-            
+
         except requests.exceptions.Timeout:
             return {
                 'success': False,
@@ -224,7 +227,7 @@ Use Directive style. Start with <!DOCTYPE html>. NO text before/after."""
                 'error': f'Portfolio generation failed: {str(e)}',
                 'html': None
             }
-    
+
     def _clean_html_response(self, html_content: str) -> str:
         html_content = html_content.strip()
         if html_content.startswith('`html'):
@@ -234,17 +237,17 @@ Use Directive style. Start with <!DOCTYPE html>. NO text before/after."""
         if html_content.endswith('`'):
             html_content = html_content[:-3]
         html_content = html_content.strip()
-        
+
         if '<!DOCTYPE html>' in html_content:
             start_idx = html_content.find('<!DOCTYPE html>')
             html_content = html_content[start_idx:]
-        
+
         if '</html>' in html_content:
             end_idx = html_content.rfind('</html>') + 7
             html_content = html_content[:end_idx]
-        
+
         return html_content
-    
+
     def _validate_html(self, html_content: str) -> bool:
         required = ['<!DOCTYPE html>', '<html', '<head>', '</head>', '<body>', '</body>', '</html>']
         for element in required:
@@ -255,7 +258,7 @@ Use Directive style. Start with <!DOCTYPE html>. NO text before/after."""
         if len(html_content) < 50:
             return False
         return True
-    
+
     def save_portfolio(self, html_content: str, file_path: str) -> bool:
         """Save HTML content to file."""
         try:

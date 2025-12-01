@@ -1,16 +1,17 @@
 import os
-from dotenv import load_dotenv
 import tempfile
+
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
 class Config:
     """Configuration class for Flask application"""
-    
+
     # Flask Settings
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-    
+
     # GitHub OAuth Settings
     GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
@@ -18,12 +19,12 @@ class Config:
     GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
     GITHUB_USER_API_URL = 'https://api.github.com/user'
     GITHUB_REPOS_API_URL = 'https://api.github.com/user/repos'
-    
+
     # Perplexity API Settings
     PERPLEXITY_API_KEY = os.getenv('PERPLEXITY_API_KEY')
     PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions'
     PERPLEXITY_MODEL = 'sonar'  # Using the correct model name
-    
+
     # File Upload Settings
     TEMP_DIR = tempfile.gettempdir()
 
@@ -31,7 +32,7 @@ class Config:
     GENERATED_FOLDER = os.path.join(TEMP_DIR, 'generated')
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max file size
-    
+
     # Color Themes for Portfolio
     COLOR_THEMES = {
         'professional-blue': {
@@ -63,20 +64,20 @@ class Config:
             'text': '#2D3436'
         }
     }
-    
+
     @staticmethod
     def allowed_file(filename):
         """Check if file extension is allowed"""
         return '.' in filename and \
                filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
-    
+
     @staticmethod
     def validate_config():
         """Validate required environment variables"""
         required_vars = ['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'PERPLEXITY_API_KEY']
         missing = [var for var in required_vars if not os.getenv(var)]
-        
+
         if missing:
             raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
-        
+
         return True

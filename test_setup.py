@@ -25,14 +25,14 @@ def test_directories():
     print("\nTesting directories...")
     dirs = [Config.UPLOAD_FOLDER, Config.GENERATED_FOLDER]
     all_exist = True
-    
+
     for dir_path in dirs:
         if os.path.exists(dir_path):
             print(f"✓ {dir_path} exists")
         else:
             print(f"✗ {dir_path} does not exist")
             all_exist = False
-    
+
     return all_exist
 
 def test_resume_parser():
@@ -42,7 +42,7 @@ def test_resume_parser():
         # Test filter methods
         test_text = "Call me at 555-123-4567 or visit 123 Main Street"
         filtered = ResumeParser.filter_personal_data(test_text)
-        
+
         if "555-123-4567" not in filtered and "123 Main Street" not in filtered:
             print("✓ Resume parser filters personal data correctly")
             return True
@@ -59,11 +59,11 @@ def test_portfolio_generator():
     try:
         generator = PortfolioGenerator(Config.PERPLEXITY_API_KEY)
         print("✓ Portfolio generator initialized")
-        
+
         # Test HTML validation
         valid_html = "<!DOCTYPE html><html><head></head><body></body></html>"
         invalid_html = "<div>incomplete</div>"
-        
+
         if generator._validate_html(valid_html) and not generator._validate_html(invalid_html):
             print("✓ HTML validation works correctly")
             return True
@@ -79,16 +79,16 @@ def main():
     print("=" * 60)
     print("Resume to Portfolio - Setup Validation")
     print("=" * 60)
-    
+
     tests = [
         test_configuration,
         test_directories,
         test_resume_parser,
         test_portfolio_generator
     ]
-    
+
     results = [test() for test in tests]
-    
+
     print("\n" + "=" * 60)
     if all(results):
         print("✓ All tests passed! Your setup is ready.")
