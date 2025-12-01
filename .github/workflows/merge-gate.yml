@@ -124,6 +124,7 @@ jobs:
             --cov-report=xml \
             --cov-report=html \
             --cov-fail-under=70 \
+            --junitxml=test-results.xml \
             -v
 
       - name: Upload coverage reports
@@ -134,9 +135,3 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-
-      - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: test-results.xml
