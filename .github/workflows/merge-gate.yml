@@ -127,11 +127,12 @@ jobs:
             --junitxml=test-results.xml \
             -v
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage reports to artifacts
+        uses: actions/upload-artifact@v3
         if: always()
         with:
-          file: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
+          name: coverage-report
+          path: |
+            coverage.xml
+            htmlcov/
+          retention-days: 30
